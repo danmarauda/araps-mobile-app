@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — ARAPS Mobile</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.7; color: #1d1d1f; background: #fff;
+      max-width: 720px; margin: 0 auto; padding: 48px 24px 80px;
+    }
+    a { color: #0071e3; }
+    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #0071e3, #0049b0);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 22px;
+    }
+    .logo-text { font-size: 18px; font-weight: 600; }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .meta { color: #6e6e73; margin-bottom: 32px; }
+    h2 { font-size: 20px; font-weight: 600; margin: 40px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
+    p { margin-bottom: 16px; }
+    .contact-card {
+      background: #f5f5f7; border-radius: 16px; padding: 24px;
+      margin: 24px 0; display: flex; align-items: center; gap: 16px;
+    }
+    .contact-card .icon { font-size: 32px; }
+    .contact-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .contact-card p { margin: 0; color: #6e6e73; font-size: 14px; }
+    footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid #f0f0f0; font-size: 14px; color: #6e6e73; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #000; color: #f5f5f7; }
+      h2 { border-bottom-color: #2a2a2a; }
+      .contact-card { background: #1a1a1a; }
+      .contact-card p { color: rgba(255,255,255,0.5); }
+      footer { border-top-color: #2a2a2a; }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <div class="logo-icon">🏢</div>
+    <span class="logo-text">ARA Property Services</span>
+  </div>
+  <h1>Help &amp; Support</h1>
+  <p class="meta">ARAPS Mobile — Field Management Platform</p>
+
+  <h2>Get in Touch</h2>
+
+  <div class="contact-card">
+    <div class="icon">✉️</div>
+    <div>
+      <h3>Email Support</h3>
+      <p>For account issues, technical problems, or general enquiries</p>
+      <a href="mailto:support@arapropertyservices.com.au">support@arapropertyservices.com.au</a>
+    </div>
+  </div>
+
+  <div class="contact-card">
+    <div class="icon">🔒</div>
+    <div>
+      <h3>Privacy Enquiries</h3>
+      <p>For questions about your data or account deletion</p>
+      <a href="mailto:privacy@arapropertyservices.com.au">privacy@arapropertyservices.com.au</a>
+    </div>
+  </div>
+
+  <h2>Frequently Asked Questions</h2>
+
+  <p><strong>How do I sign in?</strong><br>
+  Use your ARA Property Services email via WorkOS AuthKit, Sign in with Apple, or tap "View Demo" to explore with sample data.</p>
+
+  <p><strong>How do I enable Face ID / Touch ID?</strong><br>
+  Sign in once, then go to Settings → Security and enable biometric authentication.</p>
+
+  <p><strong>How do I delete my account?</strong><br>
+  Go to Settings → Delete Account. This permanently removes all your data.</p>
+
+  <p><strong>How do I clear my chat history?</strong><br>
+  Go to Settings → Data → Clear Chat History.</p>
+
+  <p><strong>The QR scanner isn't working</strong><br>
+  Make sure you've granted camera access. Go to iPhone Settings → ARAPS Mobile → Camera and enable access.</p>
+
+  <p><strong>I can't log in with WorkOS</strong><br>
+  Ensure your account is active with ARA Property Services. Contact your IT administrator if access has been revoked.</p>
+
+  <h2>App Version</h2>
+  <p>ARAPS Mobile 1.0.0 — iOS 18.0+</p>
+  <p>Built with SwiftUI, SwiftData, WorkOS, and Convex.</p>
+
+  <footer>
+    <p>© 2026 ARA Property Services.</p>
+    <p><a href="./privacy.html">Privacy Policy</a> · <a href="./terms.html">Terms of Service</a></p>
+  </footer>
+</body>
+</html>

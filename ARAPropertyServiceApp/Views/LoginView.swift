@@ -4,6 +4,7 @@ import AuthenticationServices
 struct LoginView: View {
     @Bindable var authVM: AuthViewModel
     @Environment(\.colorScheme) private var colorScheme
+    @State private var showDemoInfo = false
 
     var body: some View {
         ScrollView {
@@ -15,22 +16,21 @@ struct LoginView: View {
                     .padding(.bottom, 12)
 
                 appleSignInButton
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 12)
 
                 biometricButton
+                    .padding(.bottom, 24)
 
-                Spacer()
-                    .frame(height: 32)
+                divider
+
+                demoModeButton
+                    .padding(.top, 16)
+                    .padding(.bottom, 24)
 
                 poweredBySection
-
-                #if DEBUG
-                devBypassButton
-                    .padding(.top, 24)
-                #endif
             }
             .padding(.horizontal, 24)
-            .padding(.top, 80)
+            .padding(.top, 64)
             .padding(.bottom, 40)
         }
         .background(Color(.systemBackground))
@@ -38,6 +38,12 @@ struct LoginView: View {
             Button("OK") {}
         } message: {
             Text(authVM.errorMessage ?? "An unknown error occurred")
+        }
+        .sheet(isPresented: $showDemoInfo) {
+            DemoInfoSheet {
+                showDemoInfo = false
+                authVM.demoLogin()
+            }
         }
     }
 
@@ -136,6 +142,39 @@ struct LoginView: View {
         }
     }
 
+    private var divider: some View {
+        HStack {
+            Rectangle()
+                .fill(Color(.separator))
+                .frame(height: 0.5)
+            Text("or")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+            Rectangle()
+                .fill(Color(.separator))
+                .frame(height: 0.5)
+        }
+    }
+
+    private var demoModeButton: some View {
+        Button {
+            showDemoInfo = true
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "eye.fill")
+                    .font(.subheadline)
+                Text("View Demo")
+                    .font(.subheadline.weight(.medium))
+            }
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
+            .background(Color(.tertiarySystemGroupedBackground))
+            .clipShape(.rect(cornerRadius: 14))
+        }
+    }
+
     private var poweredBySection: some View {
         VStack(spacing: 8) {
             HStack(spacing: 6) {
@@ -160,24 +199,88 @@ struct LoginView: View {
                 .foregroundStyle(.tertiary)
         }
     }
+}
 
-    #if DEBUG
-    private var devBypassButton: some View {
-        Button {
-            authVM.devBypassLogin()
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "hammer.fill")
+struct DemoInfoSheet: View {
+    let onContinue: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 32) {
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(ARATheme.primaryBlue.opacity(0.12))
+                            .frame(width: 80, height: 80)
+                        Image(systemName: "eye.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(ARATheme.primaryBlue)
+                    }
+
+                    Text("Demo Mode")
+                        .font(.title2.bold())
+
+                    Text("Explore ARAPS Mobile with pre-loaded sample data. No account required.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
+                VStack(alignment: .leading, spacing: 14) {
+                    DemoFeatureRow(icon: "checkmark.square.fill", text: "Browse tasks, issues, and facilities")
+                    DemoFeatureRow(icon: "exclamationmark.bubble.fill", text: "View the executive dashboard and KPIs")
+                    DemoFeatureRow(icon: "qrcode.viewfinder", text: "Try the CleanOps QR workflow")
+                    DemoFeatureRow(icon: "message.fill", text: "Send a message to AskARA (requires API key)")
+                    DemoFeatureRow(icon: "person.2.fill", text: "Browse the team directory and contacts")
+                }
+                .padding(.horizontal, 8)
+
+                VStack(spacing: 12) {
+                    Button {
+                        onContinue()
+                    } label: {
+                        Text("Continue to Demo")
+                            .font(.body.bold())
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(ARATheme.primaryBlue)
+                    .clipShape(.rect(cornerRadius: 14))
+
+                    Button("Cancel") {
+                        dismiss()
+                    }
                     .font(.subheadline)
-                Text("Dev Bypass")
-                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                }
             }
-            .foregroundStyle(.orange)
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .background(.orange.opacity(0.12))
-            .clipShape(.rect(cornerRadius: 10))
+            .padding(28)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+}
+
+struct DemoFeatureRow: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(ARATheme.primaryBlue)
+                .frame(width: 24)
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
         }
     }
-    #endif
 }

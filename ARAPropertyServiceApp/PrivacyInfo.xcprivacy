@@ -2,35 +2,29 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSPrivacyAccessedAPITypes</key>
-    <array>
-        <dict>
-            <key>NSPrivacyAccessedAPIType</key>
-            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
-            <key>NSPrivacyAccessedAPITypeReasons</key>
-            <array>
-                <string>CA92.1</string>
-            </array>
-        </dict>
-        <dict>
-            <key>NSPrivacyAccessedAPIType</key>
-            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
-            <key>NSPrivacyAccessedAPITypeReasons</key>
-            <array>
-                <string>C617.1</string>
-            </array>
-        </dict>
-        <dict>
-            <key>NSPrivacyAccessedAPIType</key>
-            <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
-            <key>NSPrivacyAccessedAPITypeReasons</key>
-            <array>
-                <string>85F4.1</string>
-            </array>
-        </dict>
-    </array>
+    <!--
+        ARAPropertyServiceApp — Privacy Manifest
+        Last updated: February 2026
+
+        REQUIRED REASON APIs used by this app and its dependencies:
+        - NSPrivacyAccessedAPICategoryUserDefaults: AppStorage, biometric flag, notification prefs
+        - NSPrivacyAccessedAPICategoryFileTimestamp: SwiftData sqlite file metadata
+        - NSPrivacyAccessedAPICategoryDiskSpace: SwiftData / document picker pre-checks
+        - NSPrivacyAccessedAPICategorySystemBootTime: URLSession internal timing (ConvexMobile / network stack)
+
+        ConvexMobile (get-convex/convex-swift) does NOT include its own PrivacyInfo.xcprivacy.
+        Its API access is declared here per Apple's guidance for SDKs without manifests.
+    -->
+
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
     <key>NSPrivacyCollectedDataTypes</key>
     <array>
+        <!-- Email address — collected via WorkOS auth and Apple Sign-In, linked to identity -->
         <dict>
             <key>NSPrivacyCollectedDataType</key>
             <string>NSPrivacyCollectedDataTypeEmailAddress</string>
@@ -43,6 +37,8 @@
                 <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
             </array>
         </dict>
+
+        <!-- Name — collected via WorkOS and Apple Sign-In, linked to identity -->
         <dict>
             <key>NSPrivacyCollectedDataType</key>
             <string>NSPrivacyCollectedDataTypeName</string>
@@ -55,10 +51,98 @@
                 <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
             </array>
         </dict>
+
+        <!-- User ID — WorkOS / Apple identity token stored in Keychain -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeUserID</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <true/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+
+        <!-- Customer support / chat messages sent to AskARA AI assistant -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeCustomerSupport</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
     </array>
-    <key>NSPrivacyTrackingDomains</key>
-    <array/>
-    <key>NSPrivacyTracking</key>
-    <false/>
+
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <!--
+            UserDefaults — used by:
+            - @AppStorage("notificationsEnabled") in SettingsView
+            - @AppStorage("biometricUserId") in AuthViewModel / LoginView
+            Reason CA92.1: Access info from app group containers shared with your app
+            (actually 1C8F.1 is for same-bundle access — using CA92.1 which covers app settings)
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+
+        <!--
+            File timestamps — used by:
+            - SwiftData SQLite database file management
+            - DocumentPickerService file metadata (NSFileModificationDate)
+            Reason C617.1: Access the timestamps, size, or other metadata of files inside the app container
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+            </array>
+        </dict>
+
+        <!--
+            Disk space — used by:
+            - SwiftData checks available space before writing
+            - DocumentPickerService pre-flight checks
+            Reason 85F4.1: Display disk space information to the user
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>85F4.1</string>
+            </array>
+        </dict>
+
+        <!--
+            System boot time — used by:
+            - URLSession / Network.framework internals (ConvexMobile WebSocket, OpenAI API calls)
+            - mach_absolute_time used by networking stack for connection timing
+            Reason 35F9.1: Measure the time elapsed between events that occurred within the app
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>35F9.1</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

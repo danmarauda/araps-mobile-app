@@ -27,6 +27,10 @@ struct ARAPSMobileAppApp: App {
         }
     }()
 
+    private var isDemoMode: Bool {
+        CommandLine.arguments.contains("DEMO_MODE")
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView(authVM: authVM)
@@ -34,7 +38,11 @@ struct ARAPSMobileAppApp: App {
                 .onAppear {
                     authVM.configure(modelContext: sharedModelContainer.mainContext)
                     SeedData.seedIfNeeded(context: sharedModelContainer.mainContext)
-                    authVM.checkAuthState()
+                    if isDemoMode {
+                        authVM.demoLogin()
+                    } else {
+                        authVM.checkAuthState()
+                    }
                 }
                 .onOpenURL { url in
                     handleDeepLink(url)

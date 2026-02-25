@@ -164,7 +164,7 @@ struct SettingsView: View {
     private var legalSection: some View {
         Section("Legal") {
             Button {
-                openURL("https://araps.aliaslabs.ai/privacy")
+                openURL("https://danmarauda.github.io/araps-mobile-app/privacy.html")
             } label: {
                 HStack {
                     Label("Privacy Policy", systemImage: "hand.raised.fill")
@@ -177,7 +177,7 @@ struct SettingsView: View {
             .foregroundStyle(.primary)
 
             Button {
-                openURL("https://araps.aliaslabs.ai/terms")
+                openURL("https://danmarauda.github.io/araps-mobile-app/terms.html")
             } label: {
                 HStack {
                     Label("Terms of Service", systemImage: "doc.text.fill")

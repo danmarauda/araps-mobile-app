@@ -325,17 +325,18 @@ class AuthViewModel {
         showError = true
     }
 
-#if DEBUG
-    func devBypassLogin() {
-        let devUser = AuthenticatedUser(
-            id: "dev-bypass-user",
-            email: "dev@ara.com.au",
-            firstName: "Dev",
+    /// Guest / Demo login — available in all builds so App Store reviewers can access the app.
+    /// Creates a local-only session using the seeded sample data. No network required.
+    func demoLogin() {
+        let demoUser = AuthenticatedUser(
+            id: "demo-guest-user",
+            email: "demo@arapropertyservices.com.au",
+            firstName: "Demo",
             lastName: "User",
             profilePictureUrl: nil,
             organizationId: nil
         )
-        currentUser = devUser
+        currentUser = demoUser
 
         if let modelContext {
             let org = getOrCreateDefaultOrganization(modelContext: modelContext)
@@ -343,6 +344,11 @@ class AuthViewModel {
         }
 
         authState = .authenticated
+    }
+
+#if DEBUG
+    func devBypassLogin() {
+        demoLogin()
     }
 #endif
 }

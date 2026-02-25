@@ -1,0 +1,72 @@
+default_platform(:ios)
+
+platform :ios do
+
+  desc "Take App Store screenshots on all required device sizes"
+  lane :screenshots do
+    capture_screenshots(
+      workspace: "ARAPropertyServiceApp.xcodeproj",
+      scheme: "ARAPropertyServiceApp",
+      output_directory: "./fastlane/screenshots",
+      clear_previous_screenshots: true,
+      devices: [
+        "iPhone 16 Pro Max",   # 6.9" — required for new apps
+        "iPhone 15 Plus",      # 6.7" — required
+        "iPhone 8 Plus",       # 5.5" — required for backwards compat
+      ],
+      languages: ["en-AU"],
+      dark_mode: false,
+      launch_arguments: ["UI_TESTING", "DEMO_MODE"]
+    )
+
+    frame_screenshots(
+      path: "./fastlane/screenshots",
+      silver: false
+    )
+  end
+
+  desc "Build and upload to App Store Connect (TestFlight)"
+  lane :beta do
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1,
+      xcodeproj: "ARAPropertyServiceApp.xcodeproj"
+    )
+
+    build_app(
+      project: "ARAPropertyServiceApp.xcodeproj",
+      scheme: "ARAPropertyServiceApp",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.arapropertyservices.araps" => "ARA Property Services Distribution"
+        }
+      }
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      changelog: "Internal beta build"
+    )
+  end
+
+  desc "Build and submit to App Store"
+  lane :release do
+    build_app(
+      project: "ARAPropertyServiceApp.xcodeproj",
+      scheme: "ARAPropertyServiceApp",
+      configuration: "Release",
+      export_method: "app-store"
+    )
+
+    upload_to_app_store(
+      submit_for_review: false,
+      automatic_release: false,
+      skip_screenshots: false,
+      skip_metadata: false,
+      metadata_path: "./fastlane/metadata",
+      screenshots_path: "./fastlane/screenshots"
+    )
+  end
+
+end

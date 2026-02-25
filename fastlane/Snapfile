@@ -1,0 +1,34 @@
+# Snapfile — Fastlane Screenshot Automation
+# Run: fastlane snapshot (or fastlane screenshots)
+
+# Devices to capture (all required App Store sizes)
+devices([
+  "iPhone 16 Pro Max",   # 6.9" 1320x2868 — required for new apps
+  "iPhone 15 Plus",      # 6.7" 1290x2796 — required
+  "iPhone 8 Plus",       # 5.5" 1242x2208 — required for older device support
+])
+
+# Language(s) to capture
+languages(["en-AU"])
+
+# Scheme containing snapshot UI tests
+scheme("ARAPropertyServiceApp")
+
+# Output path
+output_directory("./fastlane/screenshots")
+
+# Clear previous screenshots before capturing
+clear_previous_screenshots(true)
+
+# Don't stop on first error
+stop_after_first_error(false)
+
+# Dark mode off for primary screenshots (take light mode first)
+dark_mode(false)
+
+# Override status bar with consistent values
+override_status_bar(true)
+override_status_bar_arguments("--time 09:41 --dataNetwork wifi --wifiBars 3 --batteryState charged --batteryLevel 100")
+
+# Launch arguments passed to the app
+launch_arguments(["UI_TESTING", "DEMO_MODE"])
