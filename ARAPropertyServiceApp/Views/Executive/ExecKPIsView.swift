@@ -134,10 +134,5 @@ struct ExecKPIsView: View {
         .onAppear { appeared = true }
     }
 
-    private var monthYearString: String {
-        let f = DateFormatter()
-        f.dateFormat = "MMMM yyyy"
-        f.locale = Locale(identifier: "en_AU")
-        return f.string(from: .now)
-    }
+    private var monthYearString: String { ARAFormatters.monthYearAU.string(from: .now) }
 }

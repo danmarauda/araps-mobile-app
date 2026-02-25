@@ -177,15 +177,6 @@ struct ExecMeetingsView: View {
     }
 
     private func formattedDate(_ date: Date) -> String {
-        let f = DateFormatter()
-        if Calendar.current.isDateInToday(date) {
-            f.dateFormat = "h:mm a"
-        } else if Calendar.current.isDateInTomorrow(date) {
-            f.dateFormat = "'Tomorrow' h:mm a"
-        } else {
-            f.dateFormat = "EEE d MMM"
-        }
-        f.locale = Locale(identifier: "en_AU")
-        return f.string(from: date)
+        ARAFormatters.scheduleLabel(for: date)
     }
 }

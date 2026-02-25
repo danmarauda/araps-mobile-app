@@ -121,10 +121,7 @@ struct ExecJobsView: View {
     }
 
     private func formattedTime(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "h:mm a"
-        f.locale = Locale(identifier: "en_AU")
-        return f.string(from: date)
+        ARAFormatters.timeAU.string(from: date)
     }
 }
 
