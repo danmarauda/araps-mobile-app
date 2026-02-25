@@ -1,0 +1,87 @@
+# Axiom iOS Development Skills
+
+This project uses Axiom — battle-tested iOS development skills from CharlesWiltgen/Axiom.
+154 skills, 35 agents, and 11 commands are installed at `~/.cursor/skills/axiom/`.
+
+## Project: ARAPropertyServiceApp
+
+**Stack:** SwiftUI + SwiftData + WorkOS Auth + Convex Backend
+**Architecture:** MVVM (Models, ViewModels, Views, Services, Utilities)
+**Models:** Issue, Contact, FieldTask, ChatMessage, Facility, CleaningAlert, AppNotification, UserAccount, Organization, OrganizationMembership
+**Services:** WorkOS Auth, Convex, Keychain, Biometric Auth, Barcode Scanner, Apple Sign-In, Document Picker, Print
+**Theme:** Dark mode (ARATheme), custom tab bar (9 tabs)
+
+## Priority Skills for This Project
+
+### SwiftData & Persistence (this app uses SwiftData heavily)
+- `axiom-swiftdata` — SwiftData @Model, @Query, ModelContext, CloudKit integration
+- `axiom-swiftdata-migration` — Safe schema evolution without data loss
+- `axiom-swiftdata-migration-diag` — Migration crash diagnosis
+- `axiom-database-migration` — Safe schema changes for SQLite/GRDB/SwiftData
+
+### SwiftUI (primary UI framework)
+- `axiom-swiftui-architecture` — MVVM patterns, state management
+- `axiom-swiftui-debugging` — View update issues, preview crashes
+- `axiom-swiftui-performance` — SwiftUI Instrument, unnecessary updates
+- `axiom-swiftui-nav` — NavigationStack patterns
+- `axiom-swiftui-layout` — Layout system, GeometryReader, alignment
+- `axiom-swiftui-26-ref` — iOS 26 SwiftUI features, Liquid Glass
+
+### Networking & Auth (WorkOS + Convex)
+- `axiom-networking` — Network.framework, URLSession patterns
+- `axiom-networking-diag` — Connection timeouts, TLS failures
+- `axiom-deep-link-debugging` — URL scheme and universal link issues
+
+### Debugging & Performance
+- `axiom-xcode-debugging` — BUILD FAILED, simulator hangs, stale builds
+- `axiom-memory-debugging` — Leak diagnosis with Instruments
+- `axiom-build-debugging` — Dependency resolution, SPM conflicts
+- `axiom-performance-profiling` — CPU, memory, battery optimization
+- `axiom-hang-diagnostics` — Main thread hangs and freezes
+- `axiom-energy` — Battery drain diagnosis
+
+### Concurrency (Swift 6)
+- `axiom-swift-concurrency` — Data races, actor isolation, @MainActor
+- `axiom-concurrency-profiling` — Swift concurrency Instruments
+
+### Testing
+- `axiom-ui-testing` — XCUITest, Recording UI Automation
+- `axiom-swift-testing` — Swift Testing framework
+- `axiom-testing-async` — Async test patterns
+
+### Accessibility & HIG
+- `axiom-accessibility-diag` — VoiceOver, Dynamic Type, contrast
+- `axiom-hig` — Human Interface Guidelines compliance
+- `axiom-liquid-glass` — iOS 26 Liquid Glass design
+
+### Security & Privacy
+- `axiom-privacy-ux` — Permission requests, privacy manifest
+
+### App Store
+- `axiom-app-store-submission` — App Store review preparation
+- `axiom-shipping` — Release workflow
+
+## Axiom Agents (35 available)
+
+Agents auto-trigger on natural language requests:
+- `build-fixer` — Fix Xcode build errors
+- `memory-auditor` — Find memory leaks
+- `concurrency-auditor` — Find data races
+- `swiftui-performance-analyzer` — Profile SwiftUI views
+- `swiftdata-auditor` — Audit SwiftData usage
+- `accessibility-auditor` — WCAG compliance scan
+- `networking-auditor` — Network layer review
+- `security-privacy-scanner` — Security & privacy audit
+- `test-runner` — Run and analyze tests
+- `crash-analyzer` — Diagnose crash reports
+
+## Axiom Commands
+
+- `fix-build` — Auto-fix common build errors
+- `audit` — Run comprehensive code audit
+- `run-tests` — Execute test suite
+- `analyze-crash` — Parse crash logs
+- `profile` — Performance profiling
+- `screenshot` — Capture simulator screenshots
+- `status` — Project health check
+- `optimize-build` — Build time optimization
