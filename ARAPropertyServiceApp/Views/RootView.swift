@@ -41,31 +41,68 @@ struct RootView: View {
     }
 
     private var launchScreen: some View {
-        VStack(spacing: 20) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [ARATheme.primaryBlue, ARATheme.primaryBlue.opacity(0.6)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 100, height: 100)
+        ZStack {
+            araDarkBg.ignoresSafeArea()
 
-                Image(systemName: "building.2.fill")
-                    .font(.system(size: 42, weight: .semibold))
-                    .foregroundStyle(.white)
+            Canvas { context, size in
+                context.fill(
+                    Path(ellipseIn: CGRect(x: -60, y: -60, width: 300, height: 300)),
+                    with: .color(araGreen.opacity(0.07))
+                )
+                context.fill(
+                    Path(ellipseIn: CGRect(x: size.width - 160, y: size.height - 200, width: 280, height: 280)),
+                    with: .color(Color.blue.opacity(0.04))
+                )
             }
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
 
-            Text("ARAPS Mobile")
-                .font(.title2.bold())
+            VStack(spacing: 20) {
+                // Logo
+                ZStack {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(araGreen.opacity(0.16))
+                        .frame(width: 88, height: 88)
+                        .blur(radius: 14)
 
-            ProgressView()
-                .padding(.top, 8)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [araGreen, araGreen.opacity(0.72)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .strokeBorder(.white.opacity(0.2), lineWidth: 0.5)
+                        }
+                        .frame(width: 76, height: 76)
+                        .shadow(color: araGreen.opacity(0.4), radius: 20, y: 6)
+
+                    Image(systemName: "building.2.fill")
+                        .font(.system(size: 30, weight: .semibold))
+                        .foregroundStyle(araDarkBg)
+                }
+
+                VStack(spacing: 5) {
+                    Text("ARA Property Services")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(.white)
+
+                    Text("ARAPS Mobile")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(araGreen.opacity(0.7))
+                        .tracking(1.6)
+                        .textCase(.uppercase)
+                }
+
+                ProgressView()
+                    .tint(araGreen.opacity(0.6))
+                    .scaleEffect(0.9)
+                    .padding(.top, 12)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
     }
 }
 
