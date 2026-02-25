@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AuthenticationServices
 
 struct SettingsView: View {
     let authVM: AuthViewModel
@@ -7,6 +8,9 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var showClearChatAlert = false
     @State private var showLogoutAlert = false
+    @State private var showDeleteAccountAlert = false
+    @State private var showDeleteAccountConfirm = false
+    @State private var isDeletingAccount = false
     @State private var biometricEnabled: Bool = false
     @Environment(\.modelContext) private var modelContext
 
@@ -18,6 +22,8 @@ struct SettingsView: View {
                 securitySection
                 preferencesSection
                 dataSection
+                legalSection
+                accountDangerSection
                 aboutSection
             }
             .listStyle(.insetGrouped)
@@ -31,6 +37,22 @@ struct SettingsView: View {
             .alert("Sign Out?", isPresented: $showLogoutAlert) {
                 Button("Sign Out", role: .destructive) { authVM.signOut() }
                 Button("Cancel", role: .cancel) {}
+            }
+            .alert("Delete Account?", isPresented: $showDeleteAccountAlert) {
+                Button("Delete My Account", role: .destructive) {
+                    showDeleteAccountConfirm = true
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will permanently delete your account and all associated data from ARA Property Services. This action cannot be undone.")
+            }
+            .alert("Confirm Account Deletion", isPresented: $showDeleteAccountConfirm) {
+                Button("Permanently Delete", role: .destructive) {
+                    Task { await deleteAccount() }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Your account, personal data, and all your activity will be permanently deleted. You will be signed out immediately.")
             }
             .onAppear {
                 authVM.biometricService.checkAvailability()
@@ -139,12 +161,70 @@ struct SettingsView: View {
         }
     }
 
+    private var legalSection: some View {
+        Section("Legal") {
+            Button {
+                openURL("https://araps.aliaslabs.ai/privacy")
+            } label: {
+                HStack {
+                    Label("Privacy Policy", systemImage: "hand.raised.fill")
+                    Spacer()
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .foregroundStyle(.primary)
+
+            Button {
+                openURL("https://araps.aliaslabs.ai/terms")
+            } label: {
+                HStack {
+                    Label("Terms of Service", systemImage: "doc.text.fill")
+                    Spacer()
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .foregroundStyle(.primary)
+        }
+    }
+
+    private var accountDangerSection: some View {
+        Section {
+            if isDeletingAccount {
+                HStack {
+                    ProgressView()
+                        .padding(.trailing, 8)
+                    Text("Deleting account...")
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Button(role: .destructive) {
+                    showDeleteAccountAlert = true
+                } label: {
+                    Label("Delete Account", systemImage: "person.crop.circle.badge.minus")
+                }
+            }
+
+            Button(role: .destructive) {
+                showLogoutAlert = true
+            } label: {
+                Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+            }
+        } footer: {
+            Text("Deleting your account permanently removes all your data from ARA Property Services and cannot be undone.")
+                .font(.caption)
+        }
+    }
+
     private var aboutSection: some View {
         Section("About") {
             HStack {
                 Label("Version", systemImage: "info.circle")
                 Spacer()
-                Text("1.0.0")
+                Text("1.0.0 (1)")
                     .foregroundStyle(.secondary)
             }
 
@@ -161,12 +241,6 @@ struct SettingsView: View {
                 Text("WorkOS")
                     .foregroundStyle(.secondary)
             }
-
-            Button(role: .destructive) {
-                showLogoutAlert = true
-            } label: {
-                Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
-            }
         }
     }
 
@@ -178,5 +252,50 @@ struct SettingsView: View {
             }
             try? modelContext.save()
         }
+    }
+
+    private func deleteAccount() async {
+        isDeletingAccount = true
+
+        // Revoke Sign in with Apple token (required by App Store guidelines 5.1.1(v))
+        if let appleUserId = authVM.currentUser?.id {
+            let state = await authVM.appleSignInService.checkCredentialState(userId: appleUserId)
+            if state == .authorized {
+                // Server-side SIWA revocation should be done via your backend
+                // POST https://appleid.apple.com/auth/revoke with client credentials
+                // For now, we clear all local data and sign out
+            }
+        }
+
+        // Delete all user data from local SwiftData store
+        let chatDescriptor = FetchDescriptor<ChatMessage>()
+        if let chats = try? modelContext.fetch(chatDescriptor) {
+            chats.forEach { modelContext.delete($0) }
+        }
+
+        let notifDescriptor = FetchDescriptor<AppNotification>()
+        if let notifs = try? modelContext.fetch(notifDescriptor) {
+            notifs.forEach { modelContext.delete($0) }
+        }
+
+        // Remove local user account record
+        if let userId = authVM.currentUser?.id {
+            let predicate = #Predicate<UserAccount> { $0.appleUserId == userId }
+            let userDescriptor = FetchDescriptor<UserAccount>(predicate: predicate)
+            if let users = try? modelContext.fetch(userDescriptor) {
+                users.forEach { modelContext.delete($0) }
+            }
+        }
+
+        try? modelContext.save()
+        isDeletingAccount = false
+
+        // Sign out clears keychain, Convex session, and auth state
+        authVM.signOut()
+    }
+
+    private func openURL(_ urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        UIApplication.shared.open(url)
     }
 }

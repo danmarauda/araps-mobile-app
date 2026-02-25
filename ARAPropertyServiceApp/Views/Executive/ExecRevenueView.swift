@@ -1,89 +1,165 @@
 import SwiftUI
+import SwiftData
 
 struct ExecRevenueView: View {
     let onBack: () -> Void
     @State private var appeared: Bool = false
 
+    @Query private var facilities: [Facility]
+    @Query private var tasks: [FieldTask]
+    @Query private var issues: [Issue]
+    @Query private var alerts: [CleaningAlert]
+
+    private var completedTasks: Int { tasks.filter { $0.taskStatus == .completed }.count }
+    private var totalTasks: Int { tasks.count }
+    private var openIssues: Int { issues.filter { $0.status == .open || $0.status == .inProgress }.count }
+    private var resolvedIssues: Int { issues.filter { $0.status == .resolved }.count }
+    private var avgCompliance: Double {
+        facilities.isEmpty ? 0 : facilities.reduce(0) { $0 + $1.complianceRating } / Double(facilities.count)
+    }
+    private var criticalAlerts: Int {
+        alerts.filter { $0.urgency == .critical && $0.alertStatus != .resolved && $0.alertStatus != .closed }.count
+    }
+
     var body: some View {
-        ExecScreenWrapper(title: "Revenue Overview", onBack: onBack) {
-            comingSoonCard
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 16)
-                .animation(.spring(response: 0.4).delay(0.05), value: appeared)
+        ExecScreenWrapper(title: "Operations Overview", onBack: onBack) {
+            operationsSummaryCard
 
-            featuresCard
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 16)
-                .animation(.spring(response: 0.4).delay(0.12), value: appeared)
-        }
-        .onAppear { appeared = true }
-    }
-
-    private var comingSoonCard: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(araGreen.opacity(0.1))
-                    .frame(width: 64, height: 64)
-                Image(systemName: "dollarsign.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(araGreen)
-            }
-
-            VStack(spacing: 6) {
-                Text("Revenue Analytics")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white)
-                Text("Financial reporting and revenue tracking will be available in a future update.")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.45))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(3)
-            }
-
-            Text("Coming Soon")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(araGreen)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 5)
-                .background {
-                    Capsule().fill(araGreen.opacity(0.12))
-                        .overlay { Capsule().strokeBorder(araGreen.opacity(0.25), lineWidth: 0.5) }
-                }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(24)
-        .glassCard()
-        .clipShape(.rect(cornerRadius: 16))
-    }
-
-    private var featuresCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Planned Features")
+            Text("Facility Performance")
                 .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.white.opacity(0.35))
                 .textCase(.uppercase)
                 .tracking(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            ForEach([
-                ("chart.line.uptrend.xyaxis", "Month-to-date revenue tracking"),
-                ("building.2.fill", "Revenue breakdown by site"),
-                ("doc.text.fill", "Invoice management and status"),
-                ("arrow.up.right.circle.fill", "Year-over-year trend analysis"),
-            ], id: \.0) { icon, text in
-                HStack(spacing: 10) {
-                    Image(systemName: icon)
-                        .font(.system(size: 14))
-                        .foregroundStyle(araGreen.opacity(0.7))
-                        .frame(width: 20)
-                    Text(text)
-                        .font(.system(size: 12))
+            ForEach(Array(facilities.prefix(5).enumerated()), id: \.element.id) { index, facility in
+                facilityCard(facility, index: index)
+            }
+
+            if facilities.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "building.2")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white.opacity(0.3))
+                    Text("No facilities in the system yet")
+                        .font(.system(size: 13))
                         .foregroundStyle(.white.opacity(0.5))
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 32)
+                .glassCard()
+                .clipShape(.rect(cornerRadius: 16))
+            }
+        }
+        .onAppear { appeared = true }
+    }
+
+    private var operationsSummaryCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Operations Summary")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.white.opacity(0.4))
+                .textCase(.uppercase)
+                .tracking(0.5)
+
+            HStack(spacing: 0) {
+                OperationsStat(
+                    value: "\(facilities.count)",
+                    label: "Sites",
+                    color: araGreen
+                )
+                OperationsStat(
+                    value: "\(completedTasks)/\(totalTasks)",
+                    label: "Tasks",
+                    color: .blue
+                )
+                OperationsStat(
+                    value: "\(openIssues)",
+                    label: "Issues",
+                    color: openIssues > 0 ? .orange : araGreen
+                )
+                OperationsStat(
+                    value: facilities.isEmpty ? "—" : "\(Int(avgCompliance))%",
+                    label: "Compliance",
+                    color: avgCompliance >= 90 ? araGreen : .orange
+                )
+            }
+
+            if criticalAlerts > 0 {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.red)
+                    Text("\(criticalAlerts) critical alert\(criticalAlerts > 1 ? "s" : "") require attention")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.red.opacity(0.85))
+                }
+                .padding(.top, 4)
             }
         }
         .padding(16)
         .glassCard()
         .clipShape(.rect(cornerRadius: 16))
+        .opacity(appeared ? 1 : 0)
+        .animation(.easeOut(duration: 0.4), value: appeared)
+    }
+
+    private func facilityCard(_ facility: Facility, index: Int) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(facility.name)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                Text("\(facility.suburb), \(facility.state) · \(facility.clientName)")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.white.opacity(0.4))
+                    .lineLimit(1)
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(.white.opacity(0.08))
+                        Capsule()
+                            .fill(facility.complianceRating >= 90 ? araGreen : Color.orange)
+                            .frame(width: appeared ? geo.size.width * (facility.complianceRating / 100) : 0)
+                            .animation(.easeOut(duration: 0.6).delay(0.3 + Double(index) * 0.08), value: appeared)
+                    }
+                }
+                .frame(height: 4)
+            }
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(Int(facility.complianceRating))%")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(facility.complianceRating >= 90 ? araGreen : .orange)
+                Text("compliance")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.white.opacity(0.35))
+            }
+            .frame(width: 70)
+        }
+        .padding(14)
+        .glassCard()
+        .clipShape(.rect(cornerRadius: 16))
+        .opacity(appeared ? 1 : 0)
+        .offset(x: appeared ? 0 : -10)
+        .animation(.spring(response: 0.4).delay(0.2 + Double(index) * 0.07), value: appeared)
+    }
+}
+
+private struct OperationsStat: View {
+    let value: String
+    let label: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 3) {
+            Text(value)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(color)
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundStyle(.white.opacity(0.4))
+        }
+        .frame(maxWidth: .infinity)
     }
 }

@@ -178,22 +178,22 @@ struct ExecWidgetHomeView: View {
             ) { onNavigate(.kpis) }
 
             WidgetTileView(
-                icon: "calendar",
+                icon: "calendar.badge.clock",
                 iconColor: araGreen,
-                label: "Meetings",
-                value: "Schedule",
-                sub: "View calendar",
+                label: "Schedule",
+                value: "View Tasks",
+                sub: "Upcoming schedule",
                 hasAlert: false,
                 delay: 0.25,
                 appeared: appeared
             ) { onNavigate(.meetings) }
 
             WidgetTileView(
-                icon: "dollarsign.circle.fill",
+                icon: "chart.bar.fill",
                 iconColor: araGreen,
-                label: "Revenue",
+                label: "Operations",
                 value: "Overview",
-                sub: "Financial summary",
+                sub: "Facility performance",
                 hasAlert: false,
                 delay: 0.3,
                 appeared: appeared

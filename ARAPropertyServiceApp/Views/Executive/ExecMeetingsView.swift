@@ -1,89 +1,191 @@
 import SwiftUI
+import SwiftData
 
 struct ExecMeetingsView: View {
     let onBack: () -> Void
     @State private var appeared: Bool = false
 
-    var body: some View {
-        ExecScreenWrapper(title: "Meetings & Schedule", onBack: onBack) {
-            comingSoonCard
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 16)
-                .animation(.spring(response: 0.4).delay(0.05), value: appeared)
+    @Query(sort: \FieldTask.scheduledStart) private var tasks: [FieldTask]
+    @Query(sort: \Issue.reportedAt, order: .reverse) private var issues: [Issue]
 
-            calendarIntegrationCard
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 16)
-                .animation(.spring(response: 0.4).delay(0.12), value: appeared)
+    private var upcomingTasks: [FieldTask] {
+        let now = Date.now
+        return tasks.filter {
+            $0.taskStatus != .completed &&
+            $0.taskStatus != .cancelled &&
+            $0.scheduledStart >= now
+        }.prefix(6).map { $0 }
+    }
+
+    private var pendingIssues: [Issue] {
+        issues.filter { $0.status == .open || $0.status == .inProgress }.prefix(4).map { $0 }
+    }
+
+    var body: some View {
+        ExecScreenWrapper(title: "Schedule & Actions", onBack: onBack) {
+            upcomingScheduleSection
+            openActionsSection
         }
         .onAppear { appeared = true }
     }
 
-    private var comingSoonCard: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(araGreen.opacity(0.1))
-                    .frame(width: 64, height: 64)
-                Image(systemName: "calendar.badge.clock")
-                    .font(.system(size: 28))
-                    .foregroundStyle(araGreen)
-            }
-
-            VStack(spacing: 6) {
-                Text("Calendar Integration")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white)
-                Text("Meeting scheduling and calendar sync coming in the next release.")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.45))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(3)
-            }
-
-            Text("Coming Soon")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(araGreen)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 5)
-                .background {
-                    Capsule().fill(araGreen.opacity(0.12))
-                        .overlay { Capsule().strokeBorder(araGreen.opacity(0.25), lineWidth: 0.5) }
-                }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(24)
-        .glassCard()
-        .clipShape(.rect(cornerRadius: 16))
-    }
-
-    private var calendarIntegrationCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Planned Features")
+    private var upcomingScheduleSection: some View {
+        Group {
+            Text("Upcoming Schedule")
                 .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.white.opacity(0.35))
                 .textCase(.uppercase)
                 .tracking(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            ForEach([
-                ("calendar.badge.plus", "Schedule and track team meetings"),
-                ("bell.badge.fill", "Automated reminders and notifications"),
-                ("person.2.badge.key.fill", "Client meeting management"),
-                ("chart.bar.doc.horizontal.fill", "Meeting notes and action items"),
-            ], id: \.0) { icon, text in
-                HStack(spacing: 10) {
-                    Image(systemName: icon)
-                        .font(.system(size: 14))
-                        .foregroundStyle(araGreen.opacity(0.7))
-                        .frame(width: 20)
-                    Text(text)
-                        .font(.system(size: 12))
+            if upcomingTasks.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "calendar.badge.checkmark")
+                        .font(.system(size: 28))
+                        .foregroundStyle(araGreen)
+                    Text("No upcoming tasks scheduled")
+                        .font(.system(size: 13))
                         .foregroundStyle(.white.opacity(0.5))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
+                .glassCard()
+                .clipShape(.rect(cornerRadius: 16))
+                .opacity(appeared ? 1 : 0)
+                .animation(.spring(response: 0.4), value: appeared)
+            } else {
+                ForEach(Array(upcomingTasks.enumerated()), id: \.element.id) { index, task in
+                    taskCard(task, index: index)
                 }
             }
         }
-        .padding(16)
+    }
+
+    private var openActionsSection: some View {
+        Group {
+            Text("Open Actions")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.white.opacity(0.35))
+                .textCase(.uppercase)
+                .tracking(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 8)
+
+            if pendingIssues.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(araGreen)
+                    Text("No open issues requiring action")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
+                .glassCard()
+                .clipShape(.rect(cornerRadius: 16))
+                .opacity(appeared ? 1 : 0)
+                .animation(.spring(response: 0.4), value: appeared)
+            } else {
+                ForEach(Array(pendingIssues.enumerated()), id: \.element.id) { index, issue in
+                    issueCard(issue, index: upcomingTasks.count + index)
+                }
+            }
+        }
+    }
+
+    private func taskCard(_ task: FieldTask, index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(task.title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    Label(task.facilityName, systemImage: "mappin")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.45))
+                        .lineLimit(1)
+                }
+                Spacer()
+                Text(formattedDate(task.scheduledStart))
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(araGreen)
+            }
+
+            HStack {
+                Label(task.assignedWorker, systemImage: "person.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.white.opacity(0.4))
+                Spacer()
+                Label("\(task.estimatedDuration)min", systemImage: "clock")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.white.opacity(0.4))
+            }
+        }
+        .padding(14)
         .glassCard()
         .clipShape(.rect(cornerRadius: 16))
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 12)
+        .animation(.spring(response: 0.4).delay(Double(index) * 0.06), value: appeared)
+    }
+
+    private func issueCard(_ issue: Issue, index: Int) -> some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(issuePriorityColor(issue.priority))
+                .frame(width: 8, height: 8)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(issue.title)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                Text(issue.location)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.white.opacity(0.4))
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Text(issue.priority.label)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(issuePriorityColor(issue.priority))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background {
+                    Capsule().fill(issuePriorityColor(issue.priority).opacity(0.12))
+                }
+        }
+        .padding(14)
+        .glassCard()
+        .clipShape(.rect(cornerRadius: 16))
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 12)
+        .animation(.spring(response: 0.4).delay(Double(index) * 0.06), value: appeared)
+    }
+
+    private func issuePriorityColor(_ priority: IssuePriority) -> Color {
+        switch priority {
+        case .critical: return .red
+        case .high: return .orange
+        case .medium: return .yellow
+        case .low: return .blue
+        }
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        let f = DateFormatter()
+        if Calendar.current.isDateInToday(date) {
+            f.dateFormat = "h:mm a"
+        } else if Calendar.current.isDateInTomorrow(date) {
+            f.dateFormat = "'Tomorrow' h:mm a"
+        } else {
+            f.dateFormat = "EEE d MMM"
+        }
+        f.locale = Locale(identifier: "en_AU")
+        return f.string(from: date)
     }
 }
