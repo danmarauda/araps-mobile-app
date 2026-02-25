@@ -151,7 +151,7 @@ struct ChatView: View {
 
         let history = messages
 
-        Task {
+        Task { @MainActor in
             do {
                 let response = try await ChatService.sendMessage(
                     userMessage: text,

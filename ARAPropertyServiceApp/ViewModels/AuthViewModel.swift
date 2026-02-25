@@ -317,6 +317,7 @@ class AuthViewModel {
             tier: .enterprise
         )
         modelContext.insert(org)
+        // Caller is responsible for calling try? modelContext.save() after this returns
         return org
     }
 

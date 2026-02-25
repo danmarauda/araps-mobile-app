@@ -253,17 +253,6 @@ struct ExecWidgetHomeView: View {
         .padding(.top, 8)
     }
 
-    private var timeString: String {
-        let f = DateFormatter()
-        f.dateFormat = "h:mm a"
-        f.locale = Locale(identifier: "en_AU")
-        return f.string(from: .now)
-    }
-
-    private var dateString: String {
-        let f = DateFormatter()
-        f.dateFormat = "EEEE, d MMMM"
-        f.locale = Locale(identifier: "en_AU")
-        return f.string(from: .now)
-    }
+    private var timeString: String { ARAFormatters.timeAU.string(from: .now) }
+    private var dateString: String { ARAFormatters.dateAU.string(from: .now) }
 }

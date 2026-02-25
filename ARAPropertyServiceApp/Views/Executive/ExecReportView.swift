@@ -251,10 +251,7 @@ struct ExecReportView: View {
     }
 
     private func formattedDate(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.locale = Locale(identifier: "en_AU")
-        return f.string(from: date)
+        ARAFormatters.mediumDateAU.string(from: date)
     }
 }
 
